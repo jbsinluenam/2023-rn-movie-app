@@ -16,7 +16,6 @@ import {
 import { styles } from '../theme';
 import TrendingMovies from '../components/TrendingMovies';
 import MovieList from '../components/MovieList';
-import TopRatedMovies from '../components/TopRatedMovies';
 
 const ios = Platform.OS === 'ios';
 
@@ -50,7 +49,7 @@ export default function HomeScreen() {
         <MovieList title='Upcoming' data={upcoming} />
 
         {/* Top Rated Movie List */}
-        <MovieList title='Top Rated' data={upcoming} />
+        <MovieList title='Top Rated' data={topRated} />
       </ScrollView>
     </View>
   );
