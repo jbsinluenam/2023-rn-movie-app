@@ -11,6 +11,7 @@ import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { XMarkIcon } from 'react-native-heroicons/outline';
 import { useNavigation } from '@react-navigation/native';
+import Loading from '../components/Loading';
 
 const { width, height } = Dimensions.get('window');
 const ios = Platform.OS === 'ios';
@@ -19,6 +20,8 @@ const paddingTop = ios ? '' : 'pt-3';
 export default function SearchScreen() {
   let movieName = 'Ant man and the wasp: Quantumania';
   const navigation = useNavigation();
+  const [loading, setLoading] = React.useState(false);
+
   const [results, setResults] = React.useState([1, 2, 3, 4, 5]);
   return (
     <SafeAreaView className={'bg-neutral-800 flex-1 ' + paddingTop}>
@@ -38,8 +41,9 @@ export default function SearchScreen() {
       </View>
 
       {/* results */}
-
-      {results.length > 0 ? (
+      {loading ? (
+        <Loading />
+      ) : results.length > 0 ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 15 }}
