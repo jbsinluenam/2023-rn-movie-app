@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from '../theme';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
@@ -16,16 +16,38 @@ import { useNavigation } from '@react-navigation/native';
 import { DropShadow } from 'react-native-drop-shadow';
 import MovieList from '../components/MovieList';
 import Loading from '../components/Loading';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 var { width, height } = Dimensions.get('window');
 const ios = Platform.OS === 'ios';
 const vertiCalMargin = ios ? '' : 'my-3';
 
 export default function PersonScreen() {
+  //params from the route so we can use useRoute hook to get the params
+  //which is the person object from the PersonList component of the movie item
+  const { params: item } = useRoute();
   const navigation = useNavigation();
   const [isFavorite, toggleIsFavorite] = React.useState(false);
-  const [personMovies, setPersonMovies] = React.useState([1, 2, 3, 4, 5]);
+  const [personMovies, setPersonMovies] = React.useState([]);
+  const [personDetails, setPersonDetails] = React.useState({}); //[
   const [loading, setLoading] = React.useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    getPersonDetails(item.id);
+    getPersonMovies(item.id);
+  }, [item]);
+
+  const getPersonDetails = async (id) => {
+    const data = await fetchPersonDetails(id);
+    const personMovies = await fetchPersonMovies(id);
+    // console.log('person details: ', data);
+    if (data && data.id) {
+      setPersonMovies(personMovies);
+      setLoading(false);
+    }
+  };
+
   return (
     <ScrollView
       contentContainerStyle={{

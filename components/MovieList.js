@@ -10,6 +10,12 @@ import {
 import React from 'react';
 import { styles } from '../theme';
 import { useNavigation } from '@react-navigation/native';
+import {
+  image500,
+  image342,
+  image185,
+  fallbackMoviePoster,
+} from '../api/Moviedb';
 
 var { width, height } = Dimensions.get('window');
 export default function MovieList({ title, data, hideSeeAll }) {
@@ -42,15 +48,17 @@ export default function MovieList({ title, data, hideSeeAll }) {
               onPress={() => navigation.push('MOVIE', item)}>
               <View className='space-y-1 mr-4'>
                 <Image
-                  source={require('../assets/images/moviePoster2.png')}
+                  source={{
+                    uri: image185(item.poster_path) || fallbackMoviePoster,
+                  }}
                   style={{ width: width * 0.33, height: height * 0.25 }}
                   className='rounded-2xl'
                 />
                 {/* //limit the number of characters to 14 and add '...' at the end */}
                 <Text className=' text-neutral-300 ml-1'>
-                  {movieName.length > 14
-                    ? movieName.substring(0, 14 - 3) + '...'
-                    : movieName}
+                  {item.title.length > 20
+                    ? item.title.substring(0, 14 - 3) + '...'
+                    : item.title}
                 </Text>
               </View>
             </TouchableWithoutFeedback>

@@ -16,13 +16,24 @@ import { styles, theme } from '../theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import Cast from '../components/Cast';
 import MovieList from '../components/MovieList';
+import Loading from '../components/Loading';
+import {
+  fetchMovieDetails,
+  fetchMovieCredits,
+  fetchSimilarMovies,
+  fallbackMoviePoster,
+} from '../api/Moviedb';
+import { image500, image342, image185 } from '../api/Moviedb';
 
 var { width, height } = Dimensions.get('window');
 const ios = Platform.OS == 'ios';
 const topMargin = ios ? '' : 'mt-3';
 
 export default function MovieScreen() {
-  let movieName = 'Ant-Man and the Wasp: Quantumania';
+  // let movieName = 'Ant-Man and the Wasp: Quantumania';
+
+  //set the loading state to true
+  const [loading, setLoading] = React.useState(true);
 
   //params from the route so we can use useRoute hook to get the params
   const { params: item } = useRoute();
@@ -34,15 +45,52 @@ export default function MovieScreen() {
   const [isFavorite, toggleIsFavorite] = React.useState(false);
 
   //cast state to store the cast of the movie
-  const [cast, setCast] = React.useState([1, 2, 3, 4, 5]);
+  const [cast, setCast] = React.useState([]);
 
   //similarMovies state to store the similar movies
-  const [similarMovies, setSimilarMovies] = React.useState([1, 2, 3, 4, 5]);
+  const [similarMovies, setSimilarMovies] = React.useState([]);
+
+  //movie state to store the movie details
+  const [movie, setMovie] = React.useState({});
 
   //useEffect to call the API to get the movie details
   useEffect(() => {
-    //call the API to get the movie details
+    console.log('item.id: ', item.id);
+
+    setLoading(true);
+    getMovieDetails(item.id);
+    getMovieCredits(item.id);
+    getSimilarMovies(item.id);
   }, [item]);
+
+  const getMovieDetails = async () => {
+    const data = await fetchMovieDetails(item.id);
+
+    if (data) {
+      setMovie(data);
+    } else {
+      console.log('error fetching movie details');
+    }
+    setLoading(false);
+
+    // console.log('get movie details', data);
+  };
+
+  const getMovieCredits = async () => {
+    const data = await fetchMovieCredits(item.id);
+    // console.log('get movie credits', data);
+    if (data && data.cast) {
+      setCast(data.cast);
+    }
+  };
+
+  const getSimilarMovies = async () => {
+    const data = await fetchSimilarMovies(item.id);
+    // console.log('get similar movies', data);
+    if (data && data.results) {
+      setSimilarMovies(data.results);
+    }
+  };
 
   return (
     <ScrollView
@@ -75,8 +123,9 @@ export default function MovieScreen() {
         </SafeAreaView>
         <View>
           <Image
-            source={require('../assets/images/moviePoster2.png')}
-            style={{ width, height: height * 0.55 }}
+            // source={require('../assets/images/moviePoster2.png')}
+            source={{ uri: image500(item.poster_path) || fallbackMoviePoster }}
+            style={{ width, height: height * 0.65 }}
           />
           <LinearGradient
             colors={['transparent', 'rgba(23,23,23,0.8)', 'rgba(23,23,23,1)']}
@@ -90,32 +139,33 @@ export default function MovieScreen() {
       {/* movies detail */}
       <View style={{ marginTop: -(height * 0.09) }} className='space-y-3'>
         <Text className='text-white text-center text-3xl font-bold tracking-wider'>
-          {movieName}
+          {movie?.title}
         </Text>
         {/* status, release date, runtime */}
-        <Text className='text-neutral-400 font-semibold text-center text-base'>
-          Released • 2020 • 170 min
-        </Text>
+        {movie?.id ? (
+          <Text className='text-neutral-400 font-semibold text-center text-base'>
+            {movie?.status} • {movie?.release_date?.split('-')[0]} •{' '}
+            {movie?.runtime} min
+          </Text>
+        ) : null}
 
         {/* genres */}
         <View className='flex-row justify-center mx-4 space-x-2'>
-          <Text className='text-neutral-400 font-semibold text-center text-base'>
-            Action •
-          </Text>
-          <Text className='text-neutral-400 font-semibold text-center text-base'>
-            Adventure •
-          </Text>
-          <Text className='text-neutral-400 font-semibold text-center text-base'>
-            Comedy
-          </Text>
+          {movie?.genres?.map((genre, index) => {
+            let showDot = index == movie?.genres?.length - 1 ? false : true;
+            return (
+              <Text
+                key={index}
+                className='text-neutral-400 font-semibold text-center text-base'>
+                {genre.name} {showDot ? '•' : null}
+              </Text>
+            );
+          })}
         </View>
 
         {/* description */}
         <Text className='text-neutral-400  mx-4 tracking-wider'>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-          voluptas, quos, quae voluptate, voluptatem quia quibusdam doloremque
-          doloribus quod quas fugit. Quisquam voluptas, quos, quae voluptate,
-          voluptatem quia quibusdam doloremque doloribus quod quas fugit.
+          {movie?.overview}
         </Text>
       </View>
 
@@ -131,8 +181,3 @@ export default function MovieScreen() {
     </ScrollView>
   );
 }
-
-// onPress={() => navigation.goBack()}
-// style={styles.background}
-
-// className = 'absolute z-20 w-full flex-row justify-between items-center px-4';
