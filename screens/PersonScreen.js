@@ -12,11 +12,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from '../theme';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import { HeartIcon as HeartIconSolid } from 'react-native-heroicons/solid';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { DropShadow } from 'react-native-drop-shadow';
 import MovieList from '../components/MovieList';
 import Loading from '../components/Loading';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import {
+  fallbackPersonImage,
+  fetchPersonDetails,
+  fetchPersonMovies,
+} from '../api/Moviedb';
+import { image500, image342, image185 } from '../api/Moviedb';
 
 var { width, height } = Dimensions.get('window');
 const ios = Platform.OS === 'ios';
@@ -28,8 +33,9 @@ export default function PersonScreen() {
   const { params: item } = useRoute();
   const navigation = useNavigation();
   const [isFavorite, toggleIsFavorite] = React.useState(false);
+  const [person, setPerson] = React.useState({});
   const [personMovies, setPersonMovies] = React.useState([]);
-  const [personDetails, setPersonDetails] = React.useState({}); //[
+  const [personDetails, setPersonDetails] = React.useState([]); //[
   const [loading, setLoading] = React.useState(false);
 
   useEffect(() => {
@@ -40,11 +46,18 @@ export default function PersonScreen() {
 
   const getPersonDetails = async (id) => {
     const data = await fetchPersonDetails(id);
-    const personMovies = await fetchPersonMovies(id);
     // console.log('person details: ', data);
-    if (data && data.id) {
-      setPersonMovies(personMovies);
+    if (data) {
+      setPerson(data);
       setLoading(false);
+    }
+  };
+
+  const getPersonMovies = async (id) => {
+    const data = await fetchPersonMovies(id);
+    // console.log('person movies: ', data);
+    if (data && data.cast) {
+      setPersonMovies(data.cast);
     }
   };
 
@@ -94,46 +107,58 @@ export default function PersonScreen() {
             }}>
             <View className='items-center rounded-full overflow-hidden border-2 border-neutral-500 h-72 w-72'>
               <Image
-                source={require('../assets/images/castImage2.png')}
+                // source={require('../assets/images/castImage2.png')}
+                source={{
+                  uri: image342(person?.profile_path) || fallbackPersonImage,
+                }}
                 style={{ width: width * 0.74, height: height * 0.43 }}
               />
             </View>
           </View>
           <View className='mt-6'>
             <Text className='text-white text-3xl font-bold text-center'>
-              Keanu Reeves
+              {person?.name}
             </Text>
             <Text className='text-neutral-500 text-base text-center'>
-              London, United Kingdom
+              {person?.place_of_birth}
             </Text>
           </View>
 
           <View className='mt-6 mx-3 p-4 flex-row justify-between items-center bg-neutral-600 rounded-full'>
             <View className='border-r-2 border-r-neutral-400 px-2 items-center'>
               <Text className='text-white  font-semibold'>Gender</Text>
-              <Text className='text-neutral-300 text-sm'>Male</Text>
+              <Text className='text-neutral-300 text-sm'>
+                {person?.gender == 1 ? 'Female' : 'Male'}
+              </Text>
             </View>
             <View className=' border-r-2 border-r-neutral-400 px-2 items-center'>
               <Text className='text-white  font-semibold'>Birthday</Text>
-              <Text className='text-neutral-300 text-sm'>1982-09-05</Text>
+              <Text className='text-neutral-300 text-sm'>
+                {person?.birthday}
+              </Text>
             </View>
             <View className=' border-r-2 border-r-neutral-400 px-2 items-center'>
               <Text className='text-white  font-semibold'>Known For</Text>
-              <Text className='text-neutral-300 text-sm'>Acting</Text>
+              <Text className='text-neutral-300 text-sm'>
+                {person?.known_for_department}
+              </Text>
             </View>
             <View className='px-2 items-center'>
               <Text className='text-white  font-semibold'>Popularity</Text>
-              <Text className='text-neutral-300 text-sm'>80.91</Text>
+              <Text className='text-neutral-300 text-sm'>
+                {person?.popularity}
+              </Text>
             </View>
           </View>
 
           <View className='my-6 mx-4 space-y-2'>
             <Text className='text-white text-lg'>Biography</Text>
             <Text className='text-neutral-400  tracking-wide'>
-              Keanu Reeves is a Canadian Actor. Reeves is know for his roles in
+              {/* Keanu Reeves is a Canadian Actor. Reeves is know for his roles in
               Bill & Ted's Excellent Adventure, Speed, The Matrix, and John
               Wick. He has won several awards including a star on the Hollywood
-              Walk of Fame.
+              Walk of Fame. */}
+              {person?.biography || 'N/A'}
             </Text>
           </View>
 
