@@ -35,9 +35,6 @@ export default function MovieScreen() {
   //set the loading state to true
   const [loading, setLoading] = React.useState(true);
 
-  //params from the route so we can use useRoute hook to get the params
-  const { params: item } = useRoute();
-
   //declare the navigation object so we can use it to navigate back
   const navigation = useNavigation();
 
@@ -52,6 +49,8 @@ export default function MovieScreen() {
 
   //movie state to store the movie details
   const [movie, setMovie] = React.useState({});
+  //params from the route so we can use useRoute hook to get the params
+  const { params: item } = useRoute();
 
   //useEffect to call the API to get the movie details
   useEffect(() => {
